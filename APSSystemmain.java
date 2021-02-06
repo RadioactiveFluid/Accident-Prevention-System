@@ -8,9 +8,15 @@
  *
  * @author hp
  */
+/*
+*Albi: From what I see, the for loops seem to cause a lot of the problems. Also, the logic that was discussed on our first official meeting should be done. 
+*Please bear those ideas in mind.
+*I should also suggest that you shouid try to implement a large while loop.
+*/
 import java.util.Scanner;
 public class APSSystemmain {
     public static void main(String args[]) {
+        //Albi:why is there an array of inputs? Make it easier and just ask for one input.
         Double[] durationValues = new Double[4];// Array of duration values*******
         Integer[] movementDirection = new Integer[4]; //Array grade********
         
@@ -21,14 +27,14 @@ public class APSSystemmain {
         APSSystem b1= new APSSystem(a1);
         System.out.println ("                                                  ");
         b1.TriggerAlarm();
-        
+        //Albi: Please trace the output.
         for (int i=0; i<=3;i++)
             {
                 
             System.out.printf("INPUT PULSE DURATION (IN MICROSECONDS) FOR THE SENSOR %d: \n", i+1);
             System.out.println ("                                                  ");
             durationValues [i] = in.nextDouble();
-            double a2= durationValues[i];            
+            double a2= durationValues[i];  //Albi: what is a2 used for? I don't see this used again in the code.         
             }
         
         for (int j=0; j<=3;j++)
@@ -44,6 +50,8 @@ public class APSSystemmain {
                                 {     
                           System.out.println("OBSTACLE HAS BEEN DECTECTED IN CLOSE PROXIMITY OF THE CAR. WAIT TO SEE SAFE DIRECTION(S) OF MOVEMENT");
                           System.out.println ("                                                  ");
+                         //Albi: Is there a reason for the size of this loop? It feels like the elements in the arrays are constantly changing. 
+                         //PLease perform a trace of a theoretical output.
                           for (int g=0; g<=2;g++)
                           {
                                  boolean commandDir=false;
