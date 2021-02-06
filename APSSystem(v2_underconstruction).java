@@ -53,7 +53,8 @@ public class APSSystem {
     
      public void getUserInput(int SX)
         {
-    
+                    //Albi:Is distance2 a necessary variable? I don't see it called anywhere else, 
+                    //so perhaps remove it to simplify the code. Just set each sensor to distance1.
                     if (SX ==1)
                                 {
                                     distance2= distance1;
@@ -107,7 +108,8 @@ public class APSSystem {
             this.BackSensor_2=durations[1];
             this.LeftSensor_3=durations[2];
             this.RightSensor_4=durations[3];
-            
+            //Albi: Just to clarify, there should only be user input when the right and left sensors are open while the front and back sensors are blocked.
+            //We discussed this in a meeting.
              if(FrontSensor_1<=20)// if distance is less than 20 Cm 
                 {
                         if ((BackSensor_2<=20) || ((LeftSensor_3 <=20)) || (RightSensor_4 <=20))
@@ -143,7 +145,8 @@ public class APSSystem {
                                         
                             }
                 }
-        }
+        }                         //Albi: Nothing wrong with this, but I believe that the user should hear the buzzer when it's close to 20 cm.
+                                  //then if the car is 20 cm away from an obstacle, just have the car move automatically.  
                                   public String TriggerAlarm()
                                         {
                                              return "BEEP....BEEP...BEEP" ;
