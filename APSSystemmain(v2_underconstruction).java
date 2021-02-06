@@ -45,7 +45,7 @@ public class APSSystemmain {
          String input = in.nextLine();
          String[] inputNum = input.split(",");
            double[] durations = new double[inputNum.length];
-        
+        //Albi: Make the constructor fill in the durations instead of the main method if you continue with the array approach.
         for(int i=0; i < durations.length; i++)
             {
                 durations[i] = Double.parseDouble(inputNum[i]);
@@ -58,7 +58,8 @@ public class APSSystemmain {
 //                 double[] durationValues = {1500.0, 1200.0, 1600.0, 800.0};
 //                int[] movementDirection = {1, 2, 3, 4}; //Array grade********
 
-
+        //Albi: You can adjust the variables in the for loop condition so that you don't need to have a j+1.
+        //Albi: This for loop feels messy. What's happening is that it's going to show each distance, so tracing the code can be difficult.
         for (int j=0; j<=3;j++)
             {
                     distanceValues[j]=b1.SensorDistance(durations[j]);
@@ -66,7 +67,10 @@ public class APSSystemmain {
                     System.out.println ("");
                     b1.getUserInput(j+1);
             }
-                
+                     //Albi: So at this point, is the car already moving, or has it encountered an obstacle. Is this meant to handle movement?
+                     //Unclear, so perhaps rethink this portion. Assume that the system already encountered an obstacle in the front sensor.
+                     //I'm making that assumption because that's what we decided was going to be the sensor that enters the APS.
+                     //Unless I'm wrong.
                      System.out.println("CHECKING TO SEE WHICH DIRECTION IS SAFE TO MOVE IN. PLEASE WAIT");
                      System.out.println ("");
                      
