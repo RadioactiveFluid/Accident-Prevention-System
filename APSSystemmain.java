@@ -8,79 +8,100 @@
  *
  * @author hp
  */
-/*
-*Albi: From what I see, the for loops seem to cause a lot of the problems. Also, the logic that was discussed on our first official meeting should be done. 
-*Please bear those ideas in mind.
-*I should also suggest that you shouid try to implement a large while loop.
-*/
+import java.util.Arrays;
 import java.util.Scanner;
-public class APSSystemmain {
-    public static void main(String args[]) {
-        //Albi:why is there an array of inputs? Make it easier and just ask for one input.
-        Double[] durationValues = new Double[4];// Array of duration values*******
-        Integer[] movementDirection = new Integer[4]; //Array grade********
+public class APSSystemmain 
+{
+
+    public static boolean isDirectionInputValid(int inputDirection, boolean[] expectedDirections)
+    {
+        return inputDirection >= 1 && inputDirection <= 4 && expectedDirections[inputDirection-1];
+    }
+    
+    public static void main(String args[]) 
+    {
+        double[] distanceValues = new double[4];// Array of distance values*******
+        int selectedDirection = 0;
         
         Scanner in= new Scanner(System.in);
-        System.out.println("INPUT 0 TO ACTIVATE THE ACCIDENT PREVENTION SYSTEM:");
-        System.out.println ("                                                  ");
-        int a1= in.nextInt();
-        APSSystem b1= new APSSystem(a1);
-        System.out.println ("                                                  ");
-        b1.TriggerAlarm();
-        //Albi: Please trace the output.
-        for (int i=0; i<=3;i++)
-            {
-                
-            System.out.printf("INPUT PULSE DURATION (IN MICROSECONDS) FOR THE SENSOR %d: \n", i+1);
-            System.out.println ("                                                  ");
-            durationValues [i] = in.nextDouble();
-            double a2= durationValues[i];  //Albi: what is a2 used for? I don't see this used again in the code.         
-            }
+        int ACTIV_APS = 0;
+        APSSystem APS_Object= new APSSystem(ACTIV_APS);
+        System.out.println ("");
+        APS_Object.TriggerAlarm();
         
-        for (int j=0; j<=3;j++)
-                {
+        System.out.println("INPUT PULSE DURATION (IN MICROSECONDS) FOR THE SENSORS 1,2,3,4 (SEPERATED BY COMMAS):");
+         String input = in.nextLine();
+         String[] inputNum = input.split(",");
+           double[] durations = new double[inputNum.length];
         
-                    double distance_x=b1.SensorDistance(durationValues[j]);
-                    System.out.printf("DISTANCE FROM OBSTACLE FOR SENSOR %d is %f cm \n", j+1, distance_x);
-                    System.out.println ("                                                  ");
-  
-                     System.out.println("CHECKING TO SEE WHICH DIRECTION IS SAFE TO MOVE IN. PLEASE WAIT");
-                     System.out.println ("                                                  ");
-                     if ((b1.isUnsafeDir()== true))
-                                {     
-                          System.out.println("OBSTACLE HAS BEEN DECTECTED IN CLOSE PROXIMITY OF THE CAR. WAIT TO SEE SAFE DIRECTION(S) OF MOVEMENT");
-                          System.out.println ("                                                  ");
-                         //Albi: Is there a reason for the size of this loop? It feels like the elements in the arrays are constantly changing. 
-                         //PLease perform a trace of a theoretical output.
-                          for (int g=0; g<=2;g++)
-                          {
-                                 boolean commandDir=false;
-                                   while (commandDir==false)
-                                        {
-                                             b1.userMovementDirectionFinder();
-                                             movementDirection[j] =in.nextInt();
-                                             int s1= movementDirection[j];
-                                                    b1.getUserInput(s1);
-                                                        if (g==2)
-                                                                {
-                                                                    commandDir=true;
-                                                                        b1.TriggerAlarm();
-                                                                        System.out.println("USER INPUT TIMEOUT ACTIVATED. AOM PROTOCOL TRIGGERED!!!");
-                                                                }
-                                                        else
-                                                                {
-                                                                    commandDir=false;
-                                                                }
-                                        }
-                          }
-                            b1.moveCar(); // Command to move car in specified direction
-                            System.out.println("CAR IS MOVING IN ASSIGNED DIRECTION NOW");
-                          }
-                else 
-                    {
-                     System.out.println("NO OBSTACLE DETECTED IN CLOSE PROXIMITY TO THE CAR.");
-                     System.out.println ("                                                  ");
-                    }    
+        for(int i=0; i < durations.length; i++)
+        {
+            durations[i] = Double.parseDouble(inputNum[i]);
+            System.out.println ("");     
         }
-    }
+        
+//                 double[] durationValues = {1500.0, 1200.0, 1600.0, 800.0};
+//                int[] movementDirection = {1, 2, 3, 4}; //Array grade********
+
+        for (int j=0; j<=3;j++)
+        {
+            distanceValues[j]=APS_Object.SensorDistance(durations[j]);
+            APS_Object.getUserInput(j+1);
+            System.out.printf("DISTANCE FROM OBSTACLE FOR SENSOR %d is %f cm \n", j+1, distanceValues[j]);
+            System.out.println ("");
+        }
+                
+        System.out.println("CHECKING TO SEE WHICH DIRECTION IS SAFE TO MOVE IN. PLEASE WAIT");
+        System.out.println ("");
+                       
+        if ((distanceValues[0]<=20.00)||(distanceValues[1]<=20.00)||(distanceValues[2]<=20.00)||(distanceValues[3]<=20.00))
+        {   
+            System.out.print("");
+            System.out.println("OBSTACLE HAS BEEN DECTECTED IN CLOSE PROXIMITY OF THE CAR. WAIT TO SEE SAFE DIRECTION(S) OF MOVEMENT");
+            System.out.print("");
+            int tries = 0;
+            
+            while (tries < 3)
+            {    
+                System.out.println("");
+                APS_Object.userMovementDirectionFinder(distanceValues);
+                System.out.print("");
+                System.out.println("PLEASE MAKE SURE TO SELECT FROM THE MOVEMENT COMMAND OPTIONS SPECIFIED ABOVE: ");
+                int directionInput = in.nextInt();
+                if(isDirectionInputValid(directionInput, APS_Object.expectedNextDirection))
+                {
+                    selectedDirection = directionInput;
+                    Arrays.fill(APS_Object.expectedNextDirection, false); //To reset the array
+                    System.out.println();
+                    APS_Object.moveCar(); // Command to move car in specified direction
+                    System.out.println("");
+                    System.out.printf("CAR IS MOVING IN ASSIGNED DIRECTION OF SENSOR %d (KEY: FRONT=1, BACK=2, LEFT=3, RIGHT=4) " , selectedDirection);
+                    break; //break from the if condition if the user if user input has been validated 
+                }
+                
+                else
+                {
+                    System.out.print("");
+                    System.out.printf("INVALID INPUT! YOU HAVE %d TRIES REMAINING", 2-tries);
+                    System.out.print("");
+                }
+                
+                tries++;
+            }
+
+            if(tries == 3)
+            {
+                System.out.println("");
+                System.out.println("ACTIVATING AOM PROTOCOL");
+                APS_Object.AOM_Protocol(distanceValues);
+            }
+        }
+        
+        else 
+        {
+            System.out.println("");
+            System.out.println("NO OBSTACLE DETECTED IN CLOSE PROXIMITY TO THE CAR.");
+            System.out.println ("");
+        }
+    }   
 }
