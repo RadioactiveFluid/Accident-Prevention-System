@@ -1,0 +1,302 @@
+int motor1pin1 = 2;  //Assign arduino pins 
+int motor1pin2 = 3;
+
+int motor2pin1 = 4;
+int motor2pin2 = 5;
+
+int trigPin1=7;
+int echoPin1=6;
+int echoPin2=9;
+int echoPin3=10;
+int echoPin4=11;
+
+//instance fields
+long distance1, duration1, FrontSensor_1, BackSensor_2, LeftSensor_3, RightSensor_4;
+int received = 0;
+
+//Switch attributes to start/stop the car
+boolean forward=true;
+//boolean backward=true;
+boolean left=true;
+boolean right=true;
+
+boolean rightBlocked, backBlocked, leftBlocked;
+
+void setup()    //Initializes and sets the initial values
+{
+      Serial.begin(9600); //Opens serial port, sets data rate to 9600 bps
+      pinMode(motor1pin1, OUTPUT); //Configures the specified pin to behave either as an input or an output
+      pinMode(motor1pin2, OUTPUT);
+      pinMode(motor2pin1, OUTPUT);
+      pinMode(motor2pin2, OUTPUT);
+
+      //establish the trigger
+      pinMode(trigPin1, OUTPUT);
+
+      //Sensor1 echo
+      pinMode(echoPin1, INPUT);
+      //Sensor 2 echo
+      pinMode(echoPin2, INPUT);
+      //Sensor 3 echo
+      pinMode(echoPin3, INPUT);
+      //Sensor 4 echo
+      pinMode(echoPin4, INPUT);
+}
+
+void loop()   //Executes continuously
+{
+
+  //handle APS
+  APS();
+  
+  //hard delay the system. This must happen, or else the car will not receive inputs reliably. Necessary to activate the APS
+  delay(300);
+  
+  //receive inputs and move
+  handleMovement();
+}
+
+void handleMovement()    //Method to handle car movement according to input from APS
+{
+    if(Serial.available()>0)
+    {
+      //it will update when it receives a new input
+      
+      received=Serial.read();
+      if(received=='f')
+      {
+          if(forward==true)
+          {
+              //move forward
+              digitalWrite(motor1pin1, HIGH);
+              digitalWrite(motor1pin2, LOW);
+              digitalWrite(motor2pin1, LOW);
+              digitalWrite(motor2pin2, HIGH);
+              forward=false;
+          }
+          
+          else
+          
+          {
+              //stop the car
+              digitalWrite(motor1pin1, LOW);
+              digitalWrite(motor1pin2, LOW);
+              digitalWrite(motor2pin1, LOW);
+              digitalWrite(motor2pin2, LOW);
+              forward=true;
+          }
+          
+          right=true;
+          left=true;
+       }
+      
+      else if(received=='l')
+      
+      {
+          if(left==true)
+          {
+              //turn left
+              digitalWrite(motor1pin1, HIGH);
+              digitalWrite(motor1pin2, LOW);
+              digitalWrite(motor2pin1, LOW);
+              digitalWrite(motor2pin2, LOW);
+              left=false;
+          }
+         
+          else
+          {   
+              //stop the car 
+              digitalWrite(motor1pin1, LOW);
+              digitalWrite(motor1pin2, LOW);
+              digitalWrite(motor2pin1, LOW);
+              digitalWrite(motor2pin2, LOW);
+              left=true;
+          }
+          
+          forward=true;
+          right=true;
+          
+      }
+      
+      else if(received=='r')
+      {
+          if(right==true)
+          {
+              //turn right
+              digitalWrite(motor1pin1, LOW);
+              digitalWrite(motor1pin2, LOW);
+              digitalWrite(motor2pin1, LOW);
+              digitalWrite(motor2pin2, HIGH);
+              right=false;
+          }
+          
+          else
+          {
+              //stop the car
+              digitalWrite(motor1pin1, LOW);
+              digitalWrite(motor1pin2, LOW);
+              digitalWrite(motor2pin1, LOW);
+              digitalWrite(motor2pin2, LOW);
+              right=true;
+          }
+          
+          forward=true;
+          left=true;
+      }
+      
+      else if(received=='b')
+      {
+        if(backward==true)
+          {
+              //move backwards
+              digitalWrite(motor1pin1, LOW);
+              digitalWrite(motor1pin2, HIGH);
+              digitalWrite(motor2pin1, HIGH);
+              digitalWrite(motor2pin2, LOW);
+              backward=false;
+          }
+          else
+          {
+              //stop the car
+              digitalWrite(motor1pin1, LOW);
+              digitalWrite(motor1pin2, LOW);
+              digitalWrite(motor2pin1, LOW);
+              digitalWrite(motor2pin2, LOW);
+              backward=true;
+          }
+      }
+      
+    }
+}
+
+
+void dirFinder()    //Method to determine open and safe directions for moving the car
+{
+   for(int i=1;i<=3;i++)  //3 tries provided to the user to provide input 
+   {
+       if(i==1)           //Verify if the commanded direction is safe to move in
+       {
+          BackSensor_2=SonarSensor1(trigPin1,echoPin2);
+          if(BackSensor_2<=20)
+              backBlocked=true;
+          else
+              backBlocked=false;
+       }
+       else if(i==2)
+       {
+          LeftSensor_3=SonarSensor1(trigPin1,echoPin3);//this can be front sensor
+          if(LeftSensor_3<=20)
+              leftBlocked=true;
+          else
+              leftBlocked=false;
+       }
+       else if(i==3)
+       {
+          RightSensor_4=SonarSensor1(trigPin1,echoPin4);
+          if(RightSensor_4<=20)
+              rightBlocked=true;
+          else
+              rightBlocked=false;
+       }
+   }
+   
+}
+
+void APS()  //Handle the front obstacle automatically
+{
+    FrontSensor_1=SonarSensor1(trigPin1,echoPin1);
+    if(FrontSensor_1<=20)//frontSensor reads a value less than 20 cm.
+    {
+        //turn off all of the motors regardless of how they were moving
+        digitalWrite(motor1pin1, LOW);
+        digitalWrite(motor1pin2, LOW);
+        digitalWrite(motor2pin1, LOW);
+        digitalWrite(motor2pin2, LOW);
+        delay(500);
+        //Serial.println("OBSTACLE HAS BEEN DECTECTED IN CLOSE PROXIMITY OF THE CAR. WAIT TO SEE SAFE DIRECTION(S) OF MOVEMENT");
+        dirFinder();//find the directions that are block
+        
+        if(backBlocked==true)
+        {
+            if(rightBlocked==true)
+            {
+                //turn left
+                Serial.println("Left");
+                //turn left
+                //digitalWrite(motor1pin1, HIGH);
+                //digitalWrite(motor1pin2, LOW);
+                digitalWrite(motor2pin1, HIGH);
+                digitalWrite(motor2pin2, LOW);
+                delay(500);
+                //stop motors
+                digitalWrite(motor1pin1, LOW);
+                digitalWrite(motor1pin2, LOW);
+                digitalWrite(motor2pin1, LOW);
+                digitalWrite(motor2pin2, LOW);
+            }
+            
+            else if(leftBlocked==true)
+            {
+                //turn right
+                Serial.println("Right");
+                //turn right
+                digitalWrite(motor1pin1, LOW);
+                digitalWrite(motor1pin2, HIGH);
+              //digitalWrite(motor2pin1, LOW);
+              //digitalWrite(motor2pin2, HIGH);
+                delay(500);
+                //stop motors
+                digitalWrite(motor1pin1, LOW);
+                digitalWrite(motor1pin2, LOW);
+                digitalWrite(motor2pin1, LOW);
+                digitalWrite(motor2pin2, LOW);
+            }
+            
+            else
+            {
+                //choice. Should include a wait
+            }
+            
+        }
+        
+        else
+        {
+            //move back
+            Serial.println("Back");
+            digitalWrite(motor1pin1, LOW);
+            digitalWrite(motor1pin2, HIGH);
+            digitalWrite(motor2pin1, HIGH);
+            digitalWrite(motor2pin2, LOW);
+            delay(1000);
+            //stop motors
+            digitalWrite(motor1pin1, LOW);
+            digitalWrite(motor1pin2, LOW);
+            digitalWrite(motor2pin1, LOW);
+            digitalWrite(motor2pin2, LOW);
+        }
+        
+        forward=true;
+        left=true;
+        right=true;
+    }
+}
+
+int SonarSensor1(int trigPinSensor,int echoPinSensor)  //SonarSensor function used to generate and read the ultrasonic wave & it takes the trigPIN and the echoPIN
+            {
+                    //START SonarSensor FUNCTION
+                    //generate the ultrasonic wave 
+                        digitalWrite(trigPinSensor, LOW);// put trigpin LOW 
+                        delayMicroseconds(2);// wait 2 microseconds
+                        digitalWrite(trigPinSensor, HIGH);// switch trigpin HIGH
+                        delayMicroseconds(10); // wait 10 microseconds
+                        digitalWrite(trigPinSensor, LOW);// turn it LOW again
+
+                        //read the distance
+                        duration1 = pulseIn(echoPinSensor, HIGH);//pulseIn funtion will return the time on how much the configured pin remain the level HIGH or LOW; in this case it will return how much time echoPinSensor stay HIGH
+                        distance1=(duration1/2) / 29.1; // first have to divide the duration by two to get the distance
+                        //Trace
+                        Serial.print("distance1: ");
+                        Serial.print(distance1);
+                        Serial.println(" cm");
+                        return distance1;
+             }         // END SonarSensor FUNCTION
