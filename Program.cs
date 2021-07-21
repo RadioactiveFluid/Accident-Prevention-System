@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.IO;
 using System.IO.Ports;
@@ -7,7 +7,6 @@ using System.Text;
 using CortexAccess;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-//using System.Threading.Tasks;
 
 namespace EEGLogger
 {
@@ -86,100 +85,41 @@ namespace EEGLogger
 
                 }
             }
-
-            //interpret inputs
-            
+            //interpret inputs. Needs to be surrounded in a try-catch.
             try
             {
-
                 //The range needs to be around the peak value of each impulse. 
                 //In that way, we won't receive multiple inputs
-                
-                if (((double)data[4] > 5450 && (double)data[4]< 5500) && ((double)data[15] > 5500 && (double)data[15] < 5600))//F7 Sensor
-                {
-                    //best done when blinking both eyes
-                    port.Write("d");
-                    //Console.WriteLine(data[3]);
-                    Console.WriteLine("d" + data[1]);
-                    timer = 0;
-                    /*
-                    while (timer != 1000)
-                    {
-                        //Console.WriteLine(timer);
-                        timer++;
-                        Thread.Sleep(1);
-                    }
-
-                    timer = 0;
-                    */
-
-                }
-                
                 if ((double)data[4] > 5450&&(double)data[4]<5500)//F7 Sensor
                 {
                     //best done when blinking left
-                    port.Write("a");
-                    //Console.WriteLine(data[3]);
-                    Console.WriteLine("a" + data[1]);
-                    timer = 0;
-                    /*
-                    while (timer != 1000)
-                    {
-                        //Console.WriteLine(timer);
-                        timer++;
-                        Thread.Sleep(1);
-                    }
-
-                    timer = 0;
-                    */
-
+                    port.Write("l");
+                    //Trace
+                    Console.WriteLine("l" + data[4]);
                 }
-                else if ((double)data[15] > 5500 && (double)data[15] < 5600)//F8 Sensor
+                else if ((double)data[15] > 5450 && (double)data[15] < 5500)//F8 Sensor
                 {
                     //best done when blinking right
-                    port.Write("b");
-                    //Console.WriteLine(data[7]);
-                    Console.WriteLine("b"+data[1]);
-                    timer = 0;
-                    /*
-                    while (timer != 1000)
-                    {
-                        //Console.WriteLine(timer);
-                        timer++;
-                        Thread.Sleep(1);
-                    }
-
-                    timer = 0;
-                    */
-
+                    port.Write("r");
+                    //Trace
+                    Console.WriteLine("r"+data[15]);
                 }
-                else if((double)data[12] > 5100 && (double)data[12] < 5200)//T8 Sensor
+                else if((double)data[7] > 5450 && (double)data[7] < 5500)//T7 Sensor
                 {
-                    //current = (long)data[1];
-                    //if ((long)data[1] != current)
-                    //{
-
-                    //}
-                    //else
                     {
-                        //best done when biting down
-                        port.Write("c");
-                        //Console.WriteLine(data[6]);
-                        Console.WriteLine("c");
-                        timer = 0;
-                        /*
-                        while (timer != 1000)
-                        {
-                            //Console.WriteLine(timer);
-                            timer++;
-                            Thread.Sleep(1);
-                        }
-
-                        timer = 0;
-                        */
+                        //best done when biting down right side of mouth
+                        port.Write("f");
+                        //Trace
+                        Console.WriteLine("f"+data[7]);
                     }
                 }
-                //Thread.Sleep(100);
+                else if ((double)data[12] > 5550 && (double)data[12] < 5600)//T8 Sensor
+                {
+                    //best done when biting down right side of mouth
+                    port.Write("s");
+                    //Trace
+                    Console.WriteLine("s" + data[12]);
+                }
             }
             catch
             {
@@ -211,3 +151,4 @@ namespace EEGLogger
 
     }
 }
+
